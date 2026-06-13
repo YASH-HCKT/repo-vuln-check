@@ -5,6 +5,10 @@ import { AnimatedThemeToggle } from '@/components/ui/animated-theme-toggle'
 import { Faq3 } from '@/components/ui/faq3'
 import FileTreeViewer from '@/components/ui/file-tree-viewer'
 import CodeViewer from '@/components/ui/code-viewer'
+import { HowItWorksSection } from '@/components/ui/how-it-works-section'
+import { FeaturesSection } from '@/components/ui/features-section'
+import { AdvantagesSection } from '@/components/ui/advantages-section'
+import { TermsSection } from '@/components/ui/terms-section'
 
 /* ─── Types mirroring /lib/types.ts ─── */
 interface Finding {
@@ -811,6 +815,10 @@ export default function Home() {
               </div>
             </div>
           </div>
+          <HowItWorksSection />
+          <FeaturesSection />
+          <AdvantagesSection />
+          <TermsSection />
           <Faq3 />
         </div>
       )}
