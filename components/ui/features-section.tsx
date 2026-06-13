@@ -45,7 +45,7 @@ export function FeaturesSection() {
   ]
 
   return (
-    <div style={{ padding: '48px 40px', background: '#f8f9fa', borderTop: '1px solid #e8eaed' }}>
+    <div id="features" style={{ padding: '48px 40px', background: '#f8f9fa', borderTop: '1px solid #e8eaed' }}>
       <p style={{
         fontSize: 28, fontWeight: 400, color: '#1f1f1f', margin: '0 0 12px 0',
         letterSpacing: '-0.5px', fontFamily: 'Google Sans'

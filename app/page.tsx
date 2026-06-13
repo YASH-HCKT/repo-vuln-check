@@ -9,6 +9,8 @@ import { HowItWorksSection } from '@/components/ui/how-it-works-section'
 import { FeaturesSection } from '@/components/ui/features-section'
 import { AdvantagesSection } from '@/components/ui/advantages-section'
 import { TermsSection } from '@/components/ui/terms-section'
+import { Announcement, AnnouncementTitle } from '@/components/ui/announcement'
+import { ArrowUpRight } from 'lucide-react'
 
 /* ─── Types mirroring /lib/types.ts ─── */
 interface Finding {
@@ -284,6 +286,14 @@ export default function Home() {
             <>
               <a href="#overview" className="nl-nav-link active">Overview</a>
               <a href="#how-it-works" className="nl-nav-link">How it works</a>
+              <a href="#features" style={{ display: 'inline-flex', alignItems: 'center', textDecoration: 'none' }}>
+                <Announcement>
+                  <AnnouncementTitle className="flex items-center gap-1">
+                    Features
+                    <ArrowUpRight size={14} className="shrink-0 text-muted-foreground" />
+                  </AnnouncementTitle>
+                </Announcement>
+              </a>
               <button
                 className="nl-nav-link"
                 onClick={() => handleScan(true)}
