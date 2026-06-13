@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { scanHeaders } from '@/lib/scanners/headers'
-import { scanGithub } from '@/lib/scanners/github'
+import { scanGithub, fetchRepoTree } from '@/lib/scanners/github'
 import { scanXSS } from '@/lib/scanners/xss'
 import { scanSSL } from '@/lib/scanners/ssl'
 import { scanSensitivePaths } from '@/lib/scanners/paths'
@@ -26,9 +26,15 @@ export async function POST(req: NextRequest) {
     const isGithub = target.includes('github.com')
 
     let findings: any[] = []
+    let repoTree = undefined
 
     if (isGithub) {
-      findings = await scanGithub(target)
+      const [ghFindings, tree] = await Promise.all([
+        scanGithub(target),
+        fetchRepoTree(target)
+      ])
+      findings = ghFindings
+      repoTree = tree || undefined
     } else {
       const normalizedUrl = target.startsWith('http') ? target : `https://${target}`
       
@@ -60,7 +66,7 @@ export async function POST(req: NextRequest) {
     // Generate shareable ID
     const scanId = Buffer.from(`${target}-${Date.now()}`).toString('base64url').slice(0, 12)
 
-    return NextResponse.json({ ...resultWithFixes, scanId })
+    return NextResponse.json({ ...resultWithFixes, scanId, repoTree })
 
   } catch (err: any) {
     console.error('Scan error:', err)

@@ -3,6 +3,8 @@
 import { useState, useEffect, useRef } from 'react'
 import { AnimatedThemeToggle } from '@/components/ui/animated-theme-toggle'
 import { Faq3 } from '@/components/ui/faq3'
+import FileTreeViewer from '@/components/ui/file-tree-viewer'
+import CodeViewer from '@/components/ui/code-viewer'
 
 /* ─── Types mirroring /lib/types.ts ─── */
 interface Finding {
@@ -14,6 +16,15 @@ interface Finding {
   recommendation: string
   cve?: string
   fixSnippet?: string
+  filePath?: string
+  lineNumber?: number
+}
+
+interface RepoFileNode {
+  name: string
+  path: string
+  type: 'file' | 'dir'
+  children?: RepoFileNode[]
 }
 
 interface ScanResult {
@@ -33,6 +44,7 @@ interface ScanResult {
   scanId?: string
   aiSummary?: string
   isDemo?: boolean
+  repoTree?: RepoFileNode[]
 }
 
 /* ─── Scan step messages shown during loading ─── */
@@ -101,6 +113,7 @@ export default function Home() {
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [aiSummary, setAiSummary] = useState('')
   const [loadingSummary, setLoadingSummary] = useState(false)
+  const [selectedFilePath, setSelectedFilePath] = useState<string | null>(null)
   const resultRef = useRef<HTMLDivElement>(null)
 
   /* ── Loading animation step cycle ── */
@@ -133,6 +146,14 @@ export default function Home() {
     }
   }, [result])
 
+  /* ── Auto-select first flagged file for GitHub scans with a repo tree ── */
+  useEffect(() => {
+    if (result?.repoTree && result.findings.length > 0) {
+      const firstFlagged = result.findings.find(f => f.filePath)
+      setSelectedFilePath(firstFlagged?.filePath || null)
+    }
+  }, [result])
+
   /* ── Scan handler ── */
   const handleScan = async (isDemo = false) => {
     if (!isDemo && !target.trim()) {
@@ -144,6 +165,7 @@ export default function Home() {
     setResult(null)
     setFilterSeverity('ALL')
     setExpandedId(null)
+    setSelectedFilePath(null)
 
     try {
       const response = await fetch('/api/scan', {
@@ -404,6 +426,37 @@ export default function Home() {
             {result.isDemo && ' · Demo Mode'}
           </p>
 
+          {/* ── Repo File Explorer + Code Viewer (GitHub scans only) ── */}
+          {result.scanType === 'GITHUB' && result.repoTree && (
+            <div style={{ marginBottom: 24 }}>
+              <div style={{
+                display: 'grid', gridTemplateColumns: 'minmax(220px, 280px) 1fr',
+                gap: 16, alignItems: 'stretch'
+              }}>
+                <FileTreeViewer
+                  tree={result.repoTree}
+                  flaggedPaths={result.findings.filter(f => f.filePath).map(f => f.filePath as string)}
+                  selectedPath={selectedFilePath}
+                  onSelectFile={setSelectedFilePath}
+                />
+                <CodeViewer
+                  repoUrl={result.target}
+                  filePath={selectedFilePath}
+                  highlightLine={
+                    result.findings.find(f => f.filePath === selectedFilePath)?.lineNumber
+                  }
+                />
+              </div>
+              <style>{`
+                @media (max-width: 860px) {
+                  div[style*="grid-template-columns: minmax(220px, 280px) 1fr"] {
+                    grid-template-columns: 1fr !important;
+                  }
+                }
+              `}</style>
+            </div>
+          )}
+
           {/* ── Result Header Card ── */}
           <div className="nl-result-mock" style={{ background: dm.cardBg, borderColor: dm.border }}>
             <div className="nl-result-header" style={{ background: dm.statBg, borderColor: dm.border }}>
@@ -545,6 +598,26 @@ export default function Home() {
                         {f.cve && (
                           <div style={{ marginTop: 4, fontSize: 11, color: '#80868b', fontFamily: 'monospace' }}>
                             CVE: {f.cve}
+                          </div>
+                        )}
+
+                        {/* File location + jump to code */}
+                        {f.filePath && result.repoTree && (
+                          <div style={{ marginTop: 6 }}>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                setSelectedFilePath(f.filePath!)
+                                resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                              }}
+                              style={{
+                                fontSize: 11, fontFamily: 'monospace', color: '#1a73e8',
+                                background: '#e8f0fe', border: 'none', borderRadius: 6,
+                                padding: '3px 8px', cursor: 'pointer'
+                              }}
+                            >
+                              📄 {f.filePath}{f.lineNumber ? `:${f.lineNumber}` : ''}
+                            </button>
                           </div>
                         )}
                       </div>

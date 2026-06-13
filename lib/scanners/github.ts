@@ -1,4 +1,4 @@
-import { Finding } from '../types'
+import { Finding, RepoFileNode } from '../types'
 
 // OSV.dev — free, no API key needed
 async function checkOSV(packageName: string, version: string): Promise<string[]> {
@@ -25,6 +25,106 @@ function extractRepoInfo(input: string): { owner: string, repo: string } | null 
   const match = input.match(/github\.com\/([^/]+)\/([^/\s?#]+)/)
   if (!match) return null
   return { owner: match[1], repo: match[2].replace('.git', '') }
+}
+
+// Fetch default branch name for a repo
+async function getDefaultBranch(owner: string, repo: string): Promise<string> {
+  try {
+    const res = await fetch(`https://api.github.com/repos/${owner}/${repo}`, {
+      headers: { 'Accept': 'application/vnd.github.v3+json', 'User-Agent': 'VulnLens-Scanner' },
+      signal: AbortSignal.timeout(6000)
+    })
+    if (!res.ok) return 'main'
+    const data = await res.json()
+    return data.default_branch || 'main'
+  } catch {
+    return 'main'
+  }
+}
+
+// Fetch full repo file tree (recursive) and build a nested structure for the file explorer
+export async function fetchRepoTree(repoUrl: string): Promise<RepoFileNode[] | null> {
+  const repoInfo = extractRepoInfo(repoUrl)
+  if (!repoInfo) return null
+  const { owner, repo } = repoInfo
+
+  try {
+    const branch = await getDefaultBranch(owner, repo)
+    const res = await fetch(
+      `https://api.github.com/repos/${owner}/${repo}/git/trees/${branch}?recursive=1`,
+      {
+        headers: { 'Accept': 'application/vnd.github.v3+json', 'User-Agent': 'VulnLens-Scanner' },
+        signal: AbortSignal.timeout(10000)
+      }
+    )
+    if (!res.ok) return null
+    const data = await res.json()
+    if (!Array.isArray(data.tree)) return null
+
+    // Build nested tree from flat paths
+    const root: RepoFileNode[] = []
+
+    for (const item of data.tree) {
+      // Skip very deep paths / huge repos to keep payload small
+      const parts: string[] = item.path.split('/')
+      let level = root
+
+      for (let i = 0; i < parts.length; i++) {
+        const isLast = i === parts.length - 1
+        const currentPath = parts.slice(0, i + 1).join('/')
+        let existing = level.find(n => n.name === parts[i])
+
+        if (!existing) {
+          existing = {
+            name: parts[i],
+            path: currentPath,
+            type: isLast ? (item.type === 'tree' ? 'dir' : 'file') : 'dir',
+            children: (isLast && item.type !== 'tree') ? undefined : []
+          }
+          level.push(existing)
+        }
+
+        if (existing.children) {
+          level = existing.children
+        }
+      }
+    }
+
+    // Sort: directories first, then files, alphabetically
+    const sortTree = (nodes: RepoFileNode[]) => {
+      nodes.sort((a, b) => {
+        if (a.type !== b.type) return a.type === 'dir' ? -1 : 1
+        return a.name.localeCompare(b.name)
+      })
+      for (const n of nodes) {
+        if (n.children) sortTree(n.children)
+      }
+    }
+    sortTree(root)
+
+    return root
+  } catch {
+    return null
+  }
+}
+
+// Fetch raw content of a single file from a repo (used by the code viewer)
+export async function fetchFileContent(repoUrl: string, filePath: string): Promise<string | null> {
+  const repoInfo = extractRepoInfo(repoUrl)
+  if (!repoInfo) return null
+  const { owner, repo } = repoInfo
+
+  try {
+    const branch = await getDefaultBranch(owner, repo)
+    const res = await fetch(
+      `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${filePath}`,
+      { signal: AbortSignal.timeout(8000) }
+    )
+    if (!res.ok) return null
+    return await res.text()
+  } catch {
+    return null
+  }
 }
 
 export async function scanGithub(repoUrl: string): Promise<Finding[]> {
@@ -69,7 +169,9 @@ export async function scanGithub(repoUrl: string): Promise<Finding[]> {
     }
 
     const fileData = await res.json()
-    const content = JSON.parse(Buffer.from(fileData.content, 'base64').toString('utf-8'))
+    const rawText = Buffer.from(fileData.content, 'base64').toString('utf-8')
+    const content = JSON.parse(rawText)
+    const pkgLines = rawText.split('\n')
 
     const allDeps = {
       ...content.dependencies,
@@ -93,6 +195,11 @@ export async function scanGithub(repoUrl: string): Promise<Finding[]> {
     for (const result of checks) {
       if (result.status === 'fulfilled' && result.value.cves.length > 0) {
         const { name, version, cves } = result.value
+
+        // Find the line number where this dependency is declared in package.json
+        const lineIndex = pkgLines.findIndex(line => line.includes(`"${name}"`))
+        const lineNumber = lineIndex >= 0 ? lineIndex + 1 : undefined
+
         findings.push({
           id: `dep-vuln-${name}`,
           title: `Vulnerable Dependency: ${name}@${version}`,
@@ -100,7 +207,9 @@ export async function scanGithub(repoUrl: string): Promise<Finding[]> {
           severity: cves.length >= 3 ? 'CRITICAL' : cves.length === 2 ? 'HIGH' : 'MEDIUM',
           category: 'DEPENDENCIES',
           recommendation: `Run: npm audit fix  or update ${name} to latest version.`,
-          cve: cves[0]
+          cve: cves[0],
+          filePath: 'package.json',
+          lineNumber
         })
       }
     }
@@ -118,7 +227,9 @@ export async function scanGithub(repoUrl: string): Promise<Finding[]> {
           description: 'A .env file was found publicly in this repository. May contain API keys, DB credentials.',
           severity: 'CRITICAL',
           category: 'GENERAL',
-          recommendation: 'Remove .env immediately, rotate all credentials, add .env to .gitignore.'
+          recommendation: 'Remove .env immediately, rotate all credentials, add .env to .gitignore.',
+          filePath: '.env',
+          lineNumber: 1
         })
       }
     } catch { /* .env not found = good */ }

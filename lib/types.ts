@@ -9,6 +9,15 @@ export interface Finding {
   recommendation: string
   cve?: string
   fixSnippet?: string
+  filePath?: string
+  lineNumber?: number
+}
+
+export interface RepoFileNode {
+  name: string
+  path: string
+  type: 'file' | 'dir'
+  children?: RepoFileNode[]
 }
 
 export interface ScanResult {
@@ -25,4 +34,5 @@ export interface ScanResult {
     low: number
     total: number
   }
+  repoTree?: RepoFileNode[]
 }
