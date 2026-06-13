@@ -1,0 +1,386 @@
+@import url('https://fonts.googleapis.com/css2?family=Google+Sans+Text:wght@400;500;700&family=Google+Sans:wght@400;500;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Google Sans Text', 'Google Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, 'Cascadia Code', monospace;
+  
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+
+  @keyframes accordion-down {
+    from { height: 0 }
+    to { height: var(--radix-accordion-content-height) }
+  }
+  @keyframes accordion-up {
+    from { height: var(--radix-accordion-content-height) }
+    to { height: 0 }
+  }
+}
+
+:root {
+  --background: #ffffff;
+  --foreground: #1f1f1f;
+}
+
+.dark {
+  --background: #111111;
+  --foreground: #e8eaed;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   NL- (NotebookLM) COMPONENT SYSTEM
+   Ported directly from vulnlens_notebooklm_page.html
+   ══════════════════════════════════════════════════════════════ */
+
+.nl-wrap * { box-sizing: border-box; margin: 0; padding: 0; }
+.nl-wrap {
+  font-family: 'Google Sans Text', 'Google Sans', sans-serif;
+  background: #fff;
+  color: #1f1f1f;
+  width: 100%;
+  min-height: 100vh;
+}
+
+/* ── NAV ── */
+.nl-nav {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 40px;
+  border-bottom: 1px solid #e8eaed;
+  background: #fff;
+  position: sticky; top: 0; z-index: 10;
+}
+.nl-nav-left { display: flex; align-items: center; gap: 8px; }
+.nl-nav-logo {
+  width: 32px; height: 32px;
+  background: linear-gradient(135deg, #1a73e8 0%, #34a853 100%);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+}
+.nl-nav-logo svg { width: 18px; height: 18px; }
+.nl-nav-name { font-family: 'Google Sans'; font-size: 18px; font-weight: 500; color: #1f1f1f; letter-spacing: -0.3px; }
+.nl-nav-right { display: flex; align-items: center; gap: 8px; }
+.nl-nav-link {
+  font-size: 14px; color: #444746; padding: 8px 16px; border-radius: 20px;
+  cursor: pointer; transition: background 0.15s; text-decoration: none;
+  background: none; border: none; font-family: inherit;
+}
+.nl-nav-link:hover { background: #f1f3f4; }
+.nl-nav-link.active { font-weight: 500; color: #1f1f1f; }
+.nl-nav-btn {
+  font-family: 'Google Sans'; font-size: 14px; font-weight: 500;
+  background: #1f1f1f; color: #fff;
+  border: none; border-radius: 20px;
+  padding: 8px 20px; cursor: pointer;
+  transition: background 0.15s;
+}
+.nl-nav-btn:hover { background: #3c4043; }
+
+/* ── HERO ── */
+.nl-hero {
+  padding: 80px 40px 64px;
+  text-align: center;
+  max-width: 760px;
+  margin: 0 auto;
+}
+.nl-hero-eyebrow {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 13px; font-weight: 500;
+  color: #1a73e8;
+  background: #e8f0fe;
+  padding: 6px 14px; border-radius: 20px;
+  margin-bottom: 28px;
+}
+.nl-hero-eyebrow svg { width: 14px; height: 14px; }
+.nl-hero-h1 {
+  font-family: 'Google Sans';
+  font-size: 56px; font-weight: 400;
+  line-height: 1.1; letter-spacing: -1.5px;
+  color: #1f1f1f;
+  margin-bottom: 24px;
+}
+.nl-hero-h1 .accent-blue { color: #1a73e8; }
+.nl-hero-h1 .accent-green { color: #34a853; }
+.nl-hero-sub {
+  font-size: 18px; font-weight: 400; line-height: 1.6;
+  color: #444746;
+  margin-bottom: 40px;
+  max-width: 560px;
+  margin-left: auto; margin-right: auto;
+}
+
+/* ── INPUT BAR ── */
+.nl-input-wrap {
+  max-width: 600px; margin: 0 auto 16px;
+  background: #f1f3f4;
+  border-radius: 28px;
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 8px 8px 20px;
+  border: 2px solid transparent;
+  transition: border 0.2s, background 0.2s;
+}
+.nl-input-wrap:focus-within {
+  background: #fff;
+  border-color: #1a73e8;
+  box-shadow: 0 1px 6px rgba(26,115,232,0.15);
+}
+.nl-input-wrap input {
+  flex: 1; background: transparent; border: none; outline: none;
+  font-family: 'Google Sans Text'; font-size: 15px; color: #1f1f1f;
+}
+.nl-input-wrap input::placeholder { color: #80868b; }
+.nl-scan-btn {
+  font-family: 'Google Sans'; font-size: 14px; font-weight: 500;
+  background: #1f1f1f; color: #fff;
+  border: none; border-radius: 20px;
+  padding: 10px 22px; cursor: pointer;
+  white-space: nowrap; transition: background 0.15s, transform 0.1s;
+}
+.nl-scan-btn:hover { background: #34a853; }
+.nl-scan-btn:active { transform: scale(0.97); }
+.nl-scan-btn:disabled {
+  background: #dadce0; color: #80868b; cursor: not-allowed;
+}
+.nl-hint { font-size: 12px; color: #80868b; text-align: center; margin-bottom: 48px; }
+
+/* ── FEATURE CHIPS ROW ── */
+.nl-features {
+  display: flex; gap: 12px;
+  justify-content: center;
+  margin-bottom: 72px;
+  flex-wrap: wrap;
+}
+.nl-feat {
+  display: flex; align-items: center; gap: 8px;
+  background: #f8f9fa;
+  border: 1px solid #e8eaed;
+  border-radius: 20px;
+  padding: 8px 16px;
+  font-size: 13px; color: #3c4043;
+}
+.nl-feat-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+/* ── DEMO / HOW-IT-WORKS SECTION ── */
+.nl-demo-section {
+  background: #f8f9fa;
+  border-top: 1px solid #e8eaed;
+  padding: 72px 40px;
+}
+.nl-demo-label {
+  text-align: center;
+  font-family: 'Google Sans';
+  font-size: 28px; font-weight: 400;
+  color: #1f1f1f;
+  margin-bottom: 8px;
+  letter-spacing: -0.5px;
+}
+.nl-demo-sub {
+  text-align: center; font-size: 15px; color: #5f6368;
+  margin-bottom: 48px;
+}
+.nl-steps {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 24px; max-width: 900px; margin: 0 auto;
+}
+.nl-step {
+  background: #fff;
+  border: 1px solid #e8eaed;
+  border-radius: 16px;
+  padding: 28px 24px;
+}
+.nl-step-icon {
+  width: 44px; height: 44px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 16px;
+  font-size: 20px;
+}
+.nl-step-title { font-family: 'Google Sans'; font-size: 16px; font-weight: 500; color: #1f1f1f; margin-bottom: 8px; }
+.nl-step-body { font-size: 14px; color: #5f6368; line-height: 1.6; }
+
+/* ── LIVE SCAN RESULT PANEL ── */
+.nl-result-mock {
+  max-width: 900px; margin: 48px auto 0;
+  background: #fff;
+  border: 1px solid #e8eaed;
+  border-radius: 16px;
+  overflow: hidden;
+}
+.nl-result-header {
+  padding: 16px 24px;
+  background: #f8f9fa;
+  border-bottom: 1px solid #e8eaed;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.nl-result-url { font-size: 13px; color: #5f6368; font-family: monospace; }
+.nl-result-badge {
+  font-size: 12px; font-weight: 500; padding: 4px 12px;
+  border-radius: 20px;
+}
+.nl-result-badge.badge-critical { background: #fce8e6; color: #c5221f; }
+.nl-result-badge.badge-high     { background: #fef3e2; color: #e37400; }
+.nl-result-badge.badge-moderate { background: #fef7e0; color: #b06000; }
+.nl-result-badge.badge-secure   { background: #e6f4ea; color: #137333; }
+
+.nl-result-body { padding: 24px; }
+.nl-score-row { display: flex; align-items: center; gap: 24px; margin-bottom: 24px; }
+.nl-score-num { font-family: 'Google Sans'; font-size: 48px; font-weight: 500; }
+.nl-score-label { font-size: 13px; color: #5f6368; }
+.nl-score-level { font-size: 20px; font-weight: 500; }
+
+.nl-stat-row { display: flex; gap: 16px; margin-bottom: 20px; }
+.nl-stat { text-align: center; flex: 1; padding: 12px; background: #f8f9fa; border-radius: 10px; }
+.nl-stat-n { font-family: 'Google Sans'; font-size: 22px; font-weight: 500; }
+.nl-stat-lbl { font-size: 12px; color: #5f6368; margin-top: 2px; }
+
+/* ── INDIVIDUAL FINDING ROWS ── */
+.nl-finding {
+  padding: 12px 0; border-bottom: 1px solid #e8eaed;
+  display: flex; gap: 12px; align-items: flex-start;
+}
+.nl-finding:last-child { border-bottom: none; }
+.nl-finding-chip {
+  font-size: 11px; font-weight: 500; padding: 3px 8px; border-radius: 20px;
+  white-space: nowrap; margin-top: 2px;
+  flex-shrink: 0;
+}
+.chip-critical { background: #fce8e6; color: #c5221f; }
+.chip-high     { background: #fef3e2; color: #e37400; }
+.chip-medium   { background: #e6f4ea; color: #137333; }
+.chip-low      { background: #e8f0fe; color: #1a73e8; }
+.chip-info     { background: #f1f3f4; color: #5f6368; }
+.nl-finding-title { font-size: 14px; font-weight: 500; color: #1f1f1f; }
+.nl-finding-desc  { font-size: 13px; color: #5f6368; margin-top: 3px; line-height: 1.5; }
+
+/* ── RECOMMENDATION BLOCK ── */
+.nl-rec {
+  margin-top: 8px;
+  background: #f8f9fa;
+  border: 1px solid #e8eaed;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 12px;
+  color: #3c4043;
+  line-height: 1.6;
+  font-family: monospace;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.nl-rec-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 4px;
+}
+.nl-rec-label {
+  font-size: 10px; font-weight: 600; color: #34a853;
+  text-transform: uppercase; letter-spacing: 0.5px;
+  font-family: 'Google Sans Text', sans-serif;
+}
+.nl-rec-copy {
+  background: none; border: none; cursor: pointer;
+  font-size: 12px; color: #80868b; padding: 2px 6px; border-radius: 4px;
+  transition: background 0.15s, color 0.15s;
+  font-family: inherit;
+}
+.nl-rec-copy:hover { background: #e8eaed; color: #1f1f1f; }
+
+/* ── HOW IT WORKS ── */
+.nl-how { padding: 72px 40px; max-width: 900px; margin: 0 auto; }
+.nl-how-h { font-family: 'Google Sans'; font-size: 28px; font-weight: 400; color: #1f1f1f; margin-bottom: 8px; letter-spacing: -0.5px; }
+.nl-how-sub { font-size: 15px; color: #5f6368; margin-bottom: 40px; }
+.nl-checks { display: flex; flex-direction: column; gap: 16px; }
+.nl-check { display: flex; gap: 16px; align-items: flex-start; padding: 20px; border: 1px solid #e8eaed; border-radius: 12px; background: #fff; }
+.nl-check-icon { width: 40px; height: 40px; border-radius: 10px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+.nl-check-title { font-size: 15px; font-weight: 500; color: #1f1f1f; margin-bottom: 4px; }
+.nl-check-body { font-size: 13px; color: #5f6368; line-height: 1.6; }
+
+/* ── FOOTER ── */
+.nl-footer {
+  border-top: 1px solid #e8eaed; padding: 24px 40px;
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 13px; color: #80868b;
+}
+.nl-footer-links { display: flex; gap: 20px; }
+.nl-footer a { color: #80868b; text-decoration: none; }
+.nl-footer a:hover { color: #1f1f1f; }
+
+/* ── LOADING SCAN ANIMATION ── */
+.nl-loading-section {
+  max-width: 600px; margin: 0 auto;
+  padding: 48px 24px; text-align: center;
+}
+.nl-loading-ring {
+  width: 48px; height: 48px;
+  border: 3px solid #e8eaed;
+  border-top-color: #1a73e8;
+  border-radius: 50%;
+  animation: nl-spin 0.8s linear infinite;
+  margin: 0 auto 24px;
+}
+@keyframes nl-spin { to { transform: rotate(360deg); } }
+.nl-loading-step {
+  padding: 6px 0;
+  font-size: 13px;
+  color: #80868b;
+  transition: color 0.3s, opacity 0.3s;
+}
+.nl-loading-step.active { color: #1f1f1f; font-weight: 500; }
+.nl-loading-step.done   { color: #34a853; }
+
+/* ── ERROR BANNER ── */
+.nl-error {
+  max-width: 600px; margin: 16px auto;
+  background: #fce8e6; border: 1px solid #f5c6cb;
+  border-radius: 12px; padding: 12px 20px;
+  font-size: 14px; color: #c5221f;
+  text-align: center;
+}
+
+/* ── FILTER BAR ── */
+.nl-filter-bar {
+  max-width: 900px; margin: 0 auto;
+  padding: 16px 24px 0;
+  display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+}
+.nl-filter-chip {
+  font-family: 'Google Sans Text'; font-size: 12px; font-weight: 500;
+  padding: 6px 14px; border-radius: 20px;
+  border: 1px solid #e8eaed; background: #fff; color: #5f6368;
+  cursor: pointer; transition: all 0.15s;
+}
+.nl-filter-chip:hover { border-color: #dadce0; background: #f8f9fa; }
+.nl-filter-chip.active {
+  background: #e8f0fe; color: #1a73e8; border-color: #c2d9fd;
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 768px) {
+  .nl-nav { padding: 12px 16px; }
+  .nl-hero { padding: 48px 20px 40px; }
+  .nl-hero-h1 { font-size: 36px; }
+  .nl-steps { grid-template-columns: 1fr; }
+  .nl-demo-section { padding: 48px 20px; }
+  .nl-how { padding: 48px 20px; }
+  .nl-footer { flex-direction: column; gap: 12px; padding: 20px 16px; text-align: center; }
+  .nl-stat-row { flex-wrap: wrap; }
+  .nl-stat { min-width: 80px; }
+  .nl-input-wrap { margin-left: 16px; margin-right: 16px; }
+  .nl-filter-bar { padding: 12px 16px 0; }
+}
+
+/* ── SMOOTH SCROLL ANCHOR TARGETS ── */
+#overview, #how-it-works { scroll-margin-top: 68px; }
